@@ -1,0 +1,16 @@
+a = 1
+b = 4 + 3 - 2 * a
+
+f(x, y) = x + y
+
+h(x, y) =
+    x_sqr = x * x
+    y_sqr = y * y
+    return x_sqr * y_sqr
+
+f_ = (x, y) = x + y
+
+class Person
+    constructor(name)
+        
+
