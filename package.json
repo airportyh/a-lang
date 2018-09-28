@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "assert": "^1.4.1"
+    "assert": "^1.4.1",
+    "pegjs": "^0.10.0"
   }
 }
