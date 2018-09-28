@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "pegjs calc.pegjs; ts-node peg-calc.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "assert": "^1.4.1",
-    "pegjs": "^0.10.0"
+    "pegjs": "^0.10.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.1"
   }
 }
