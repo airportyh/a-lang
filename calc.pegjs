@@ -1,26 +1,36 @@
 start
-  = term
+  = statements
 
-whitespace
-  = " " *
+ws = [ ]+
 
-term_op
-  = [+-]
+term_op = [+-]
 
-factor_op
-  = [*/]
+statements
+  = first:statement "\n" rest:statements { return [first, ...rest] }
+  / s:statement { return [s] }
+
+statement
+  = var_declaration
+
+identifier
+  = id:[a-z]+ ([a-zA-Z0-9]+)? { return id.join("") }
+
+var_declaration
+  = lhs:identifier ws "=" ws rhs:term { return { type: 'assignment', lhs, rhs } }
 
 term
-  = lhs:factor whitespace op:term_op whitespace rhs:term { return { lhs: lhs, op, rhs: rhs }; }
+  = lhs:factor ws op:term_op ws rhs:term { return { type: 'bin_op', lhs, op, rhs } }
   / factor
 
+factor_op = [*/]
+
 factor
-  = lhs:primary whitespace op:factor_op whitespace rhs:factor { return { lhs: lhs, op, rhs: rhs }; }
+  = lhs:primary ws op:factor_op ws rhs:factor { return { type: 'bin_op', lhs, op, rhs} }
   / primary
 
 primary
-  = integer
-  / "(" whitespace term:term whitespace ")" { return term; }
+  = number
+  / "(" ws term ws ")" { return expr }
 
-integer "integer"
-  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+number
+  = digits:[0-9]+ { return { type: 'number', value: Number(digits.join("")) } }
