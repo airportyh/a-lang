@@ -1,3 +1,9 @@
-Multiple lines
-Variables
-Functions
+function definitions
+comments
+if statements
+while loops
+for loops
+unary negative operator
+local variables
+strings
+string interpolation

@@ -1,11 +1,8 @@
-import { parse } from "./calc";
+import { parse } from "./peg-calc-parser";
+import * as fs from "fs";
 import * as util from "util";
 import { evaluateAST } from "./evaluate";
-
-let code = 
-`x = 24 / 6 - 1
-y = x * x
-print(x, 3 + y)`;
+let code = fs.readFileSync("./example.code") + "";
 let ast = parse(code);
 console.log(util.inspect(ast, { depth: 10 }));
-// console.log("answer:", evaluateAST(ast));
+// evaluateAST(ast);
