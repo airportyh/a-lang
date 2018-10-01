@@ -38,14 +38,14 @@ const comma = operator(',')
 const gt = operator('>')
 const lt = operator('<')
 const assignment = operator('=')
-const number = { test: token => token.type === 'number' }
-const leftparan = { test: token => token.type === 'leftparan' }
-const rightparan = { test: token => token.type === 'rightparan' }
+const number = tokenType('number')
+const leftparan = tokenType('leftparan')
+const rightparan = tokenType('rightparan')
 const if_ = keyword('if')
 const blockbegin = tokenType('blockbegin')
 const blockend = tokenType('blockend')
 const newline = tokenType('newline')
-const identifier = { test: token => token.type === 'word' };
+const identifier = tokenType('word')
 %}
 
 main -> statements {% d => d %}
