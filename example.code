@@ -1,8 +1,7 @@
-hello() {
+hello():
 	a = 1
 	print(a)
 	return 3 * a
-}
 
 square(n) = n * n
 
