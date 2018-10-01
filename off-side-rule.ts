@@ -118,6 +118,6 @@ function * tokenize(input: string): IterableIterator<string> {
     }
 }
 
-function peek<T>(arr: T[]): T {
+function peek<T>(arr: T[]): T | undefined {
     return arr[arr.length - 1];
 }

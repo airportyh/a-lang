@@ -1,8 +1,9 @@
-hello():
-	a = 1
-	print(a)
-	return 3 * a
+if n + 1:
+	print(blah)
 
-square(n) = n * n
+hello(subject):
+	print(subject)
 
+d = distance(4, 5, 0, 0)
+print(d)
 hello()

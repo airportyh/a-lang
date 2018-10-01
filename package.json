@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "pegjs peg-calc-parser.pegjs; ts-node peg-calc.ts"
+    "test": "pegjs peg-calc-parser.pegjs; ts-node peg-calc.ts",
+    "nearley": "nearleyc nearley-grammar.ne -o nearley-grammar.js; ts-node nearley-parser"
   },
   "keywords": [],
   "author": "",

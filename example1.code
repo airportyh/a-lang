@@ -1,3 +1,12 @@
 distance(x1, y1, x2, y2) = sqrt(sqr(x1 - x2) + sqr(y1 - y2))
 d = distance(4, 5, 0, 0)
 print(d)
+
+hello():
+	a = 1
+	print(a)
+	return 3 * a
+
+square(n) = n * n
+
+hello()

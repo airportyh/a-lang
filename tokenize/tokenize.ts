@@ -1,7 +1,8 @@
 import * as assert from "assert";
 import { isNumber } from "util";
 
-export type State = "open" | "number" | "word";
+export type State = "open" | "number" | "word" | 
+    "start-indent-block" | "collect-line-indent";
 export type Op = "+" | "-" | "*" | "/" | "^";
 export type Operator = { type: "operator", op: Op };
 export type Token = 
@@ -10,7 +11,11 @@ Operator |
 { type: "leftparan" } |
 { type: "rightparan" } |
 { type: "newline" } |
-{ type: "word", word: string };
+{ type: "word", word: string } |
+{ type: "blockbegin" } |
+{ type: "blockend" };
+
+type IndentChar = " " | "\t";
 
 const aCharCode = 'a'.charCodeAt(0);
 const zCharCode = 'z'.charCodeAt(0);
@@ -35,18 +40,53 @@ function isDigit(char: string) {
 }
 
 function isOperator(char: string): char is Op {
-    return "+-*/^".indexOf(char) !== -1;
+    return "+-*/^><=,".indexOf(char) !== -1;
+}
+
+function isIndentChar(char: string): char is IndentChar {
+    return char === " " || char === "\t";
+}
+
+function peek<T>(arr: T[]): T | undefined {
+    return arr[arr.length - 1];
 }
 
 export function tokenize(input: string): Token[] {
     let i: number = 0;
     let tokens: Token[] = [];
-    let state: State = "open";
+    let state: State = "collect-line-indent";
     let digits: string = "";
     let word: string = "";
+    let indentation: string = "";
+    let indentStack: string[] = [];
     while (i < input.length) {
         let char: string = input[i];
-        if (state === "open") {
+        // console.log("state", state);
+        // console.log("indentStack", indentStack);
+        // console.log("char", char);
+        if (state === "collect-line-indent") {
+            if (isIndentChar(char)) {
+                indentation += char;
+            } else {
+                // console.log(
+                //     "tokens", tokens,
+                //     "indentation", JSON.stringify(indentation),
+                //     "indentStack", indentStack
+                // );
+                while (indentStack.length > 0 &&
+                    peek(indentStack) !== indentation) {
+                    indentStack.pop();
+                    tokens.push({ type: "blockend" });
+                    // console.log("pushed blockend");
+                }
+                if (indentStack.length === 0 && indentation !== "") {
+                    throw new Error("Unexpected indentation");
+                }
+                indentation = "";
+                state = "open";
+                continue;
+            }
+        } else if (state === "open") {
             if (isDigit(char)) {
                 state = "number";
                 digits += char;
@@ -68,6 +108,9 @@ export function tokenize(input: string): Token[] {
                 tokens.push({
                     type: "newline"
                 });
+                state = "collect-line-indent";
+            } else if (char === ":") {
+                startIndent();
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -93,6 +136,10 @@ export function tokenize(input: string): Token[] {
                 tokens.push({
                     type: "newline"
                 });
+                state = "collect-line-indent";
+            } else if (char === ":") {
+                pushNumber();
+                startIndent();
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -118,6 +165,45 @@ export function tokenize(input: string): Token[] {
                 tokens.push({
                     type: "newline"
                 });
+                state = "collect-line-indent";
+            } else if (char === ":") {
+                pushWord();
+                startIndent();
+            } else {
+                throw new Error("Does not compute: " + JSON.stringify(char));
+            }
+        } else if (state === "start-indent-block") {
+            if (char === " " || char === "\t") {
+                indentation += char;
+            } else if (isLetter(char)) {
+                word = char;
+                pushIndent();
+                state = "word";
+            } else if (isDigit(char)) {
+                digits = char;
+                pushIndent();
+                state = "number";
+            } else if (char === "(") {
+                pushIndent();
+                state = "open";
+                tokens.push({ type: "leftparan" });
+            } else if (char === ")") {
+                pushIndent();
+                state = "open";
+                tokens.push({ type: "rightparan" });
+            } else if (isOperator(char)) {
+                pushIndent();
+                state = "open";
+                tokens.push({
+                    type: "operator",
+                    op: char
+                });
+            } else if (char === "\n") {
+                pushIndent();
+                tokens.push({
+                    type: "newline"
+                });
+                state = "collect-line-indent";
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -129,6 +215,12 @@ export function tokenize(input: string): Token[] {
     } else if (state === "word") {
         pushWord();
     }
+
+    while (indentStack.length) {
+        indentStack.pop();
+        tokens.push({ type: "blockend" });
+    }
+
     return tokens;
 
     function pushNumber(): void {
@@ -147,5 +239,32 @@ export function tokenize(input: string): Token[] {
         });
         word = "";
         state = "open";
+    }
+
+    function startIndent(): void {
+        tokens.push({
+            type: "blockbegin"
+        });
+        assert.equal(input[i + 1], "\n");
+        tokens.push({
+            type: "newline"
+        });
+        i++;
+        indentation = "";
+        state = "start-indent-block";
+    }
+
+    function pushIndent(): void {
+        if (indentation.length === 0) { 
+            throw new Error("Indentation expected here.");
+        }
+        let prevIndent = peek(indentStack) || "";
+        if (indentation.substr(0, prevIndent.length) !== prevIndent) {
+            // the previous indent must be the prefix of the
+            // new indent, otherwise the indentation is invalid
+            throw new Error("Invalid indentation.");
+        }
+        indentStack.push(indentation);
+        indentation = "";
     }
 }

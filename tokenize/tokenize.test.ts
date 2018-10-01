@@ -130,21 +130,220 @@ describe('tokenize', () => {
     // Indented blocks
     // https://en.wikipedia.org/wiki/Off-side_rule
         
-    // it("tokenizes indentation blocks", () => {
-    //     const code = [
-    //         "if n:",
-    //         "   print(n)"
-    //     ].join("\n");
-    //     expect(tokenize(code))
-    //     .toEqual([
-    //         { type: 'word', word: 'if' },
-    //         { type: 'word', word: 'n' },
-    //         { type: 'blockbegin' },
-    //         { type: 'word', word: 'print' },
-    //         { type: 'leftparan' },
-    //         { type: 'word', word: 'n' },
-    //         { type: 'rightparan' },
-    //         { type: 'blockend' },
-    //     ]);
-    // });
+    it("tokenizes indentation blocks", () => {
+        const code = [
+            "if n > 0:",
+            "   print(n)"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: 'word', word: 'if' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '>' },
+            { type: 'number', value: 0 },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'blockend' },
+        ]);
+    });
+
+    it("tokenizes indentation blocks with multiple indented lines", () => {
+        const code = [
+            "if n > 0:",
+            "   print(n)",
+            "   print(n)",
+            "   print(n)"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: 'word', word: 'if' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '>' },
+            { type: 'number', value: 0 },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'blockend' },
+        ]);
+    });
+
+    it("disallows indentation at the beginning of a program", () => {
+        expect(() => tokenize("   1 + 2"))
+        .toThrow(/Unexpected indentation/);
+    });
+
+    it("closes block when there is de-indentation", () => {
+        const code = [
+            "if n > 0:",
+            "   print(n)",
+            "print(n)"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: 'word', word: 'if' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '>' },
+            { type: 'number', value: 0 },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'blockend' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' }
+        ]);
+    });
+
+    it("requires indentation after block marker (:)", () => {
+        const code = [
+            "abc:",
+            "def"
+        ].join("\n");
+        expect(() => tokenize(code))
+        .toThrow(/Indentation expected here/);
+    });
+
+    it("allows 2-level indentation", () => {
+        const code = [
+            "abc:",
+            "   def:",
+            "       ghi"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: 'word', word: 'abc' },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'def' },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'ghi' },
+            { type: 'blockend' },
+            { type: 'blockend' }
+        ]);
+    });
+
+    it("disallows improper de-indentation", () => {
+        const code = [
+            "abc:",
+            "    def",
+            "   ghi"
+        ].join("\n");
+        expect(() => tokenize(code))
+        .toThrow(/Unexpected indentation/);
+    });
+
+    it("disallows indenting more without the block marker (:)", () => {
+        const code = [
+            "abc:",
+            "    def",
+            "        ghi"
+        ].join("\n");
+        expect(() => tokenize(code))
+        .toThrow(/Unexpected indentation/);
+    });
+
+    it("second level block must indent more than previous", () => {
+        const code = [
+            "abc:",
+            "    def:",
+            "  ghi"
+        ].join("\n");
+        expect(() => tokenize(code))
+        .toThrow(/Invalid indentation/);
+    });
+
+    it("works for this complex example", () => {
+        const code = [
+            "if n > 0:",
+            "    print(n)",
+            "    if m < 0:",
+            "        print(m)",
+            "    print(n * 2)",
+            "print(n + m)"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: 'word', word: 'if' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '>' },
+            { type: 'number', value: 0 },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'word', word: 'if' },
+            { type: 'word', word: 'm' },
+            { type: 'operator', op: '<' },
+            { type: 'number', value: 0 },
+            { type: 'blockbegin' },
+            { type: 'newline' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'm' },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'blockend' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '*' },
+            { type: 'number', value: 2 },
+            { type: 'rightparan' },
+            { type: 'newline' },
+            { type: 'blockend' },
+            { type: 'word', word: 'print' },
+            { type: 'leftparan' },
+            { type: 'word', word: 'n' },
+            { type: 'operator', op: '+' },
+            { type: 'word', word: 'm' },
+            { type: 'rightparan' }
+        ]);
+    });
+
+    it("tokenizes function definitions", () => {
+        const code = [
+            "hello(subject):",
+            "    print(subject)"
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: "word" , word: "hello" }, 
+            { type: "leftparan" }, 
+            { type: "word" , word: "subject" }, 
+            { type: "rightparan" }, 
+            { type: "blockbegin" }, 
+            { type: "newline" }, 
+            { type: "word" , word: "print" }, 
+            { type: "leftparan" }, 
+            { type: "word" , word: "subject" }, 
+            { type: "rightparan" }, 
+            { type: "blockend" }
+        ]);
+    });
 })
