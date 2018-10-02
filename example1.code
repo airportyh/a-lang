@@ -1,5 +1,6 @@
 distance(x1, y1, x2, y2) = sqrt(sqr(x1 - x2) + sqr(y1 - y2))
 d = distance(4, 5, 0, 0)
+
 print(d)
 
 hello():
@@ -9,4 +10,18 @@ hello():
 
 square(n) = n * n
 
+hello()
+
+distance(x1, y1, x2, y2) = sqrt(sqr(x1 + x2) + sqr(y1 + y2))
+if n + 1:
+	print(blah)
+
+hello(subject):
+	print(subject)
+
+formula(x, y):
+	return x * 2 + y * 4
+
+d = distance(4, 5, 0, 0)
+print(d)
 hello()
