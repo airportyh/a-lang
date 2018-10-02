@@ -80,7 +80,7 @@ function_body_statement
     |  function_call       {% first %}
     |  assignment          {% first %}
     |  return_statement    {% first %}
-    |  expression 
+    |  expression          {% first %}
 
 assignment
     -> identifier %assignment expression
@@ -119,10 +119,10 @@ function_definition_short
             type: 'function_definition',
             name: d[0].name,
             parameters: d[2],
-            body: {
+            body: [{
                 type: 'return_statement',
                 value: d[5]
-            }
+            }]
         }) %}
 
 return_statement

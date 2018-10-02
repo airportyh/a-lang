@@ -1,3 +1,6 @@
+* figure out error handling and error message generation
+* line numbers
+
 strings
 arrays
 else and else-if clauses
@@ -9,3 +12,4 @@ Evaluation
 * math
 * string
 * function
+
