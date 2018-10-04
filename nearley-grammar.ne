@@ -39,6 +39,8 @@ const exp = operator('^')
 const comma = operator(',')
 const gt = operator('>')
 const lt = operator('<')
+const leftbracket = operator('[')
+const rightbracket = operator(']')
 const assignment = operator('=')
 const number = tokenType('number')
 const leftparan = tokenType('leftparan')
@@ -49,6 +51,7 @@ const blockbegin = tokenType('blockbegin')
 const blockend = tokenType('blockend')
 const newline = tokenType('newline')
 const identifier = tokenType('word')
+const string = tokenType('string')
 %}
 
 main -> statements {% d => d %}
@@ -96,6 +99,10 @@ function_call
     -> identifier %leftparan argument_list %rightparan
         {% d => ({ type: 'function_call', fn: d[0].name, arguments: d[2] }) %}
 
+array_literal
+    -> %leftbracket argument_list %rightbracket
+        {% d => ({ type: 'array', items: d[1] }) %}
+
 parameter_list
     -> identifier %comma parameter_list
         {% d => [d[0], ...d[2]] %}
@@ -128,8 +135,6 @@ function_definition_short
 return_statement
     -> %return_ expression {% d => ({ type: 'return_statement', value: d[1] }) %}
 
-identifier -> %identifier {% d => ({ type: 'identifier', name: d[0].word }) %}
-
 if_statement
     -> %if_ expression %blockbegin %newline
             statements 
@@ -157,4 +162,8 @@ single
     -> %number {% first %}
     |  identifier {% first %}
     |  function_call {% first %}
+    |  %string {% first %}
+    |  array_literal {% first %}
     |  %leftparan expression %rightparan {% second %}
+
+identifier -> %identifier {% d => ({ type: 'identifier', name: d[0].word }) %}

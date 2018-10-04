@@ -40,7 +40,7 @@ function isDigit(char: string) {
 }
 
 function isOperator(char: string): char is Op {
-    return "+-*/^><=,".indexOf(char) !== -1;
+    return "+-*/^><=,[]".indexOf(char) !== -1;
 }
 
 function isIndentChar(char: string): char is IndentChar {
@@ -65,161 +65,192 @@ export function tokenize(input: string): Token[] {
         // console.log("state", state);
         // console.log("indentStack", indentStack);
         // console.log("char", char);
-        if (state === "collect-line-indent") {
-            if (isIndentChar(char)) {
-                indentation += char;
-            } else {
-                while (indentStack.length > 0 &&
-                    peek(indentStack) !== indentation) {
-                    indentStack.pop();
-                    tokens.push({ type: "blockend" });
+        switch (state) {
+            case "collect-line-indent":
+                if (isIndentChar(char)) {
+                    indentation += char;
+                } else {
+                    while (indentStack.length > 0 &&
+                        peek(indentStack) !== indentation) {
+                        indentStack.pop();
+                        tokens.push({ type: "blockend" });
+                    }
+                    if (indentStack.length === 0 && indentation !== "") {
+                        throw new Error("Unexpected indentation");
+                    }
+                    indentation = "";
+                    state = "open";
+                    continue;
                 }
-                if (indentStack.length === 0 && indentation !== "") {
-                    throw new Error("Unexpected indentation");
+                break;
+            case "open":
+                if (isDigit(char)) {
+                    state = "number";
+                    digits += char;
+                } else if (isLetter(char)) {
+                    word = char;
+                    state = "word";
+                } else if (char === " ") {
+                    state = "open";
+                } else if (char === "(") {
+                    tokens.push({ type: "leftparan" });
+                } else if (char === ")") {
+                    tokens.push({ type: "rightparan" });
+                } else if (isOperator(char)) {
+                    tokens.push({
+                        type: "operator",
+                        op: char
+                    });
+                } else if (char === "\n") {
+                    tokens.push({
+                        type: "newline"
+                    });
+                    state = "collect-line-indent";
+                } else if (char === ":") {
+                    startIndent();
+                    state = "start-indent-block";
+                } else if (char === '"') {
+                    string = "";
+                    state = "collect-string";
+                } else {
+                    throw new Error("Does not compute: " + JSON.stringify(char));
                 }
-                indentation = "";
-                state = "open";
-                continue;
-            }
-        } else if (state === "open") {
-            if (isDigit(char)) {
-                state = "number";
-                digits += char;
-            } else if (isLetter(char)) {
-                word = char;
-                state = "word";
-            } else if (char === " ") {
-                state = "open";
-            } else if (char === "(") {
-                tokens.push({ type: "leftparan" });
-            } else if (char === ")") {
-                tokens.push({ type: "rightparan" });
-            } else if (isOperator(char)) {
-                tokens.push({
-                    type: "operator",
-                    op: char
-                });
-            } else if (char === "\n") {
-                tokens.push({
-                    type: "newline"
-                });
-                state = "collect-line-indent";
-            } else if (char === ":") {
-                startIndent();
-            } else if (char === '"') {
-                state = "collect-string";
-            } else {
-                throw new Error("Does not compute: " + JSON.stringify(char));
-            }
-        } else if (state === "number") {
-            if (isDigit(char)) {
-                digits += char;
-            } else if (char === "(") {
-                pushNumber();
-                tokens.push({ type: "leftparan" });
-            } else if (char === ")") {
-                pushNumber();
-                tokens.push({ type: "rightparan" });
-            } else if (char === " ") {
-                pushNumber();
-            } else if (isOperator(char)) {
-                pushNumber();
-                tokens.push({
-                    type: "operator",
-                    op: char
-                });
-            } else if (char === "\n") {
-                pushNumber();
-                tokens.push({
-                    type: "newline"
-                });
-                state = "collect-line-indent";
-            } else if (char === ":") {
-                pushNumber();
-                startIndent();
-            } else if (char === '"') {
-                pushNumber();
-                state = "collect-string";
-            } else {
-                throw new Error("Does not compute: " + JSON.stringify(char));
-            }
-        } else if (state === "word") {
-            if (isLetterOrDigit(char)) {
-                word += char;
-            } else if (char === "(") {
-                pushWord();
-                tokens.push({ type: "leftparan" });
-            } else if (char === ")") {
-                pushWord();
-                tokens.push({ type: "rightparan" });
-            } else if (char === " ") {
-                pushWord();
-            } else if (isOperator(char)) {
-                pushWord();
-                tokens.push({
-                    type: "operator",
-                    op: char
-                });
-            } else if (char === "\n") {
-                pushWord();
-                tokens.push({
-                    type: "newline"
-                });
-                state = "collect-line-indent";
-            } else if (char === ":") {
-                pushWord();
-                startIndent();
-            } else if (char === '"') {
-                pushWord();
-                state = "collect-string";
-            } else {
-                throw new Error("Does not compute: " + JSON.stringify(char));
-            }
-        } else if (state === "start-indent-block") {
-            if (char === " " || char === "\t") {
-                indentation += char;
-            } else if (isLetter(char)) {
-                word = char;
-                pushIndent();
-                state = "word";
-            } else if (isDigit(char)) {
-                digits = char;
-                pushIndent();
-                state = "number";
-            } else if (char === "(") {
-                pushIndent();
-                state = "open";
-                tokens.push({ type: "leftparan" });
-            } else if (char === ")") {
-                pushIndent();
-                state = "open";
-                tokens.push({ type: "rightparan" });
-            } else if (isOperator(char)) {
-                pushIndent();
-                state = "open";
-                tokens.push({
-                    type: "operator",
-                    op: char
-                });
-            } else if (char === "\n") {
-                pushIndent();
-                tokens.push({
-                    type: "newline"
-                });
-                state = "collect-line-indent";
-            } else {
-                throw new Error("Does not compute: " + JSON.stringify(char));
-            }
-        } else if (state === "collect-string") {
-            if (char === '"') {
-                tokens.push({
-                    type: 'string',
-                    string: string
-                });
-                state = "open";
-            } else {
-                string += char;
-            }
+                break;
+            case "number":
+                if (isDigit(char)) {
+                    digits += char;
+                } else if (char === "(") {
+                    pushNumber();
+                    tokens.push({ type: "leftparan" });
+                } else if (char === ")") {
+                    pushNumber();
+                    tokens.push({ type: "rightparan" });
+                } else if (char === " ") {
+                    pushNumber();
+                } else if (isOperator(char)) {
+                    pushNumber();
+                    tokens.push({
+                        type: "operator",
+                        op: char
+                    });
+                } else if (char === "\n") {
+                    pushNumber();
+                    tokens.push({
+                        type: "newline"
+                    });
+                    state = "collect-line-indent";
+                } else if (char === ":") {
+                    pushNumber();
+                    startIndent();
+                    state = "start-indent-block";
+                } else if (char === '"') {
+                    pushNumber();
+                    string = "";
+                    state = "collect-string";
+                } else {
+                    throw new Error("Does not compute: " + JSON.stringify(char));
+                }
+                break;
+            case "word":
+                if (isLetterOrDigit(char)) {
+                    word += char;
+                } else if (char === "(") {
+                    pushWord();
+                    tokens.push({ type: "leftparan" });
+                } else if (char === ")") {
+                    pushWord();
+                    tokens.push({ type: "rightparan" });
+                } else if (char === " ") {
+                    pushWord();
+                } else if (isOperator(char)) {
+                    pushWord();
+                    tokens.push({
+                        type: "operator",
+                        op: char
+                    });
+                } else if (char === "\n") {
+                    pushWord();
+                    tokens.push({
+                        type: "newline"
+                    });
+                    state = "collect-line-indent";
+                } else if (char === ":") {
+                    pushWord();
+                    startIndent();
+                    state = "start-indent-block";
+                } else if (char === '"') {
+                    pushWord();
+                    string = "";
+                    state = "collect-string";
+                } else {
+                    throw new Error("Does not compute: " + JSON.stringify(char));
+                }
+                break;
+            case "start-indent-block":
+                if (char === " " || char === "\t") {
+                    indentation += char;
+                } else if (isLetter(char)) {
+                    word = char;
+                    pushIndent();
+                    state = "word";
+                } else if (isDigit(char)) {
+                    digits = char;
+                    pushIndent();
+                    state = "number";
+                } else if (char === "(") {
+                    pushIndent();
+                    state = "open";
+                    tokens.push({ type: "leftparan" });
+                } else if (char === ")") {
+                    pushIndent();
+                    state = "open";
+                    tokens.push({ type: "rightparan" });
+                } else if (isOperator(char)) {
+                    pushIndent();
+                    state = "open";
+                    tokens.push({
+                        type: "operator",
+                        op: char
+                    });
+                } else if (char === "\n") {
+                    pushIndent();
+                    tokens.push({
+                        type: "newline"
+                    });
+                    state = "collect-line-indent";
+                } else if (char === '"') {
+                    pushIndent();
+                    string = "";
+                    state = "collect-string";
+                } else {
+                    throw new Error("Does not compute: " + JSON.stringify(char));
+                }
+                break;
+            case "collect-string":
+                if (char === '"') {
+                    tokens.push({
+                        type: 'string',
+                        string: string
+                    });
+                    string = "";
+                    state = "open";
+                } else if (char === '\\') {
+                    const nextChar = input[++i];
+                    if (nextChar === '"') {
+                        string += nextChar;
+                    } else if (nextChar === 'n') {
+                        string += "\n";
+                    } else if (nextChar === 't') {
+                        string += "\t";
+                    } else if (nextChar === 'r') {
+                        string += "\r";
+                    } else {
+                        string += nextChar;
+                    }
+                } else {
+                    string += char;
+                }
+                break;
         }
         i++;
     }

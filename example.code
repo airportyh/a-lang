@@ -1,1 +1,3 @@
-message = "Hello world"
+message = "\t\"Hello\"\n\"world\""
+things = ["apple", "orange", "banana"]
+numbers = [1, 2, 3]
