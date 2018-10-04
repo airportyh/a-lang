@@ -1,8 +1,7 @@
 import * as assert from "assert";
 import { isNumber } from "util";
 
-export type State = "open" | "number" | "word" | 
-    "start-indent-block" | "collect-line-indent";
+export type State = "open" | "number" | "word" | "start-indent-block" | "collect-line-indent" | "collect-string";
 export type Op = "+" | "-" | "*" | "/" | "^";
 export type Operator = { type: "operator", op: Op };
 export type Token = 
@@ -13,7 +12,8 @@ Operator |
 { type: "newline" } |
 { type: "word", word: string } |
 { type: "blockbegin" } |
-{ type: "blockend" };
+{ type: "blockend" } |
+{ type: "string", string: string };
 
 type IndentChar = " " | "\t";
 
@@ -59,6 +59,7 @@ export function tokenize(input: string): Token[] {
     let word: string = "";
     let indentation: string = "";
     let indentStack: string[] = [];
+    let string: string = "";
     while (i < input.length) {
         let char: string = input[i];
         // console.log("state", state);
@@ -68,16 +69,10 @@ export function tokenize(input: string): Token[] {
             if (isIndentChar(char)) {
                 indentation += char;
             } else {
-                // console.log(
-                //     "tokens", tokens,
-                //     "indentation", JSON.stringify(indentation),
-                //     "indentStack", indentStack
-                // );
                 while (indentStack.length > 0 &&
                     peek(indentStack) !== indentation) {
                     indentStack.pop();
                     tokens.push({ type: "blockend" });
-                    // console.log("pushed blockend");
                 }
                 if (indentStack.length === 0 && indentation !== "") {
                     throw new Error("Unexpected indentation");
@@ -111,6 +106,8 @@ export function tokenize(input: string): Token[] {
                 state = "collect-line-indent";
             } else if (char === ":") {
                 startIndent();
+            } else if (char === '"') {
+                state = "collect-string";
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -140,6 +137,9 @@ export function tokenize(input: string): Token[] {
             } else if (char === ":") {
                 pushNumber();
                 startIndent();
+            } else if (char === '"') {
+                pushNumber();
+                state = "collect-string";
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -169,6 +169,9 @@ export function tokenize(input: string): Token[] {
             } else if (char === ":") {
                 pushWord();
                 startIndent();
+            } else if (char === '"') {
+                pushWord();
+                state = "collect-string";
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
             }
@@ -206,6 +209,16 @@ export function tokenize(input: string): Token[] {
                 state = "collect-line-indent";
             } else {
                 throw new Error("Does not compute: " + JSON.stringify(char));
+            }
+        } else if (state === "collect-string") {
+            if (char === '"') {
+                tokens.push({
+                    type: 'string',
+                    string: string
+                });
+                state = "open";
+            } else {
+                string += char;
             }
         }
         i++;
