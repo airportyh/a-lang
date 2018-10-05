@@ -21,8 +21,9 @@ type ProgramContext = {
 
 const functionMap = {
     print: (...args) => console.log(args.join("")),
-    pow: Math.pow,
-    log: Math.log,
+    log: (n) => Math.log(n) / Math.log(10),
+    log2: (n) => Math.log(n) / Math.log(2),
+    ln: Math.log,
     sin: Math.sin,
     round: Math.round
 }

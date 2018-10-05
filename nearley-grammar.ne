@@ -154,8 +154,22 @@ factor
     |  exponent {% first %}
 
 exponent
-    -> exponent %exp single
-        {% d => ({ type: 'bin_op', op: d[1][0].op, lhs: d[0], rhs: d[4] }) %}
+    -> comparison %exp exponent
+        {% d => ({ type: 'bin_op', op: d[1].op, lhs: d[0], rhs: d[2] }) %}
+    |  comparison {% first %}
+
+comparison_op
+    -> %gt {% first %}
+    |  %lt {% first %}
+
+comparison
+    -> single comparison_op comparison
+        {% d => ({
+            type: 'bin_op',
+            lhs: d[0],
+            op: d[1].op,
+            rhs: d[2]
+        }) %}
     |  single {% first %}
 
 negative
