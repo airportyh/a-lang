@@ -1,8 +1,7 @@
-* figure out error handling and error message generation
+* improve tokenizer error message
+* improve parser error message
 * line numbers
 
-strings
-arrays
 else and else-if clauses
 while loops
 for loops

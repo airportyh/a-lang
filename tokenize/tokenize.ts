@@ -13,7 +13,7 @@ Operator |
 { type: "word", word: string } |
 { type: "blockbegin" } |
 { type: "blockend" } |
-{ type: "string", string: string };
+{ type: "string_literal", string: string };
 
 type IndentChar = " " | "\t";
 
@@ -229,7 +229,7 @@ export function tokenize(input: string): Token[] {
             case "collect-string":
                 if (char === '"') {
                     tokens.push({
-                        type: 'string',
+                        type: 'string_literal',
                         string: string
                     });
                     string = "";

@@ -51,7 +51,7 @@ const blockbegin = tokenType('blockbegin')
 const blockend = tokenType('blockend')
 const newline = tokenType('newline')
 const identifier = tokenType('word')
-const string = tokenType('string')
+const string = tokenType('string_literal')
 %}
 
 main -> statements {% d => d %}
@@ -101,7 +101,7 @@ function_call
 
 array_literal
     -> %leftbracket argument_list %rightbracket
-        {% d => ({ type: 'array', items: d[1] }) %}
+        {% d => ({ type: 'array_literal', items: d[1] }) %}
 
 parameter_list
     -> identifier %comma parameter_list
@@ -158,8 +158,12 @@ exponent
         {% d => ({ type: 'bin_op', op: d[1][0].op, lhs: d[0], rhs: d[4] }) %}
     |  single {% first %}
 
+negative
+    -> %minus expression {% d => ({ type: 'negative', value: d[1] }) %}
+
 single
     -> %number {% first %}
+    |  negative {% first %}
     |  identifier {% first %}
     |  function_call {% first %}
     |  %string {% first %}
