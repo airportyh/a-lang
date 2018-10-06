@@ -24,6 +24,11 @@ const ZCharCode = 'Z'.charCodeAt(0);
 const zeroCharCode = '0'.charCodeAt(0);
 const nineCharCode = '9'.charCodeAt(0);
 
+const operators = new Set([
+    "+", "-", "*", "/", "^", ">", "<", "=", "[", "]",
+    "==", ">=", "<="
+]);
+
 function isLetter(char: string) {
     const charCode = char.charCodeAt(0);
     return (charCode >= aCharCode && charCode <= zCharCode) || 

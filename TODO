@@ -1,13 +1,15 @@
+* 2-char operators: ==, >=, <=
 * else-if clauses
-* while loops
+* and and or operators
 * for loops
+* string operations
+* array operations
+* function scoped variables
 
 * error when wrong number of arguments?
 * improve tokenizer error message
 * improve parser error message
 * line numbers
 
-* string operations
-* array operations
-* custom functions
+
 

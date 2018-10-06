@@ -1,6 +1,2 @@
-n = -9
-if n > 0:
-    print("yea!")
-else:
-    print("you are stupid!")
-print(n)
+distance(x1, y1, x2, y2) = sqrt(sqr(x1 - x2) + sqr(x2 - y2))
+print(distance(1, 1, 1, 9))

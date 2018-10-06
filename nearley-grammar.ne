@@ -48,6 +48,7 @@ const rightparan = tokenType('rightparan')
 const if_ = keyword('if')
 const return_ = keyword('return')
 const else_ = keyword('else')
+const while_ = keyword('while')
 const blockbegin = tokenType('blockbegin')
 const blockend = tokenType('blockend')
 const newline = tokenType('newline')
@@ -69,6 +70,7 @@ statements
 block_statement
     -> if_statement {% id %}
     | function_definition {% id %}
+    | while_loop    {% id %}
 
 line_statement
     -> function_definition_short {% first %}
@@ -158,6 +160,16 @@ else_clause
             statements
         %newline:? %blockend
         {% d => d[3] %}
+
+while_loop
+    -> %while_ expression %blockbegin %newline
+            statements
+        %newline:? %blockend
+        {% d => ({
+            type: 'while_loop',
+            cond: d[1],
+            body: d[4]
+        }) %}
 
 expression -> term {% first %}
 

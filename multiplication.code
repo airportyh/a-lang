@@ -1,0 +1,7 @@
+n = 1
+while n < 11:
+    m = 1
+    while m < 11:
+        print(n, " × ", m, " = ", n * m)
+        m = m + 1
+    n = n + 1
