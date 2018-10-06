@@ -5,7 +5,9 @@
 * string operations
 * array operations
 * function scoped variables
+* array index and length
 
+* error when variable not found, give suggestions and explanation
 * error when wrong number of arguments?
 * improve tokenizer error message
 * improve parser error message
