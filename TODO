@@ -1,15 +1,13 @@
+* else and else-if clauses
+* while loops
+* for loops
+
 * error when wrong number of arguments?
 * improve tokenizer error message
 * improve parser error message
 * line numbers
 
-else and else-if clauses
-while loops
-for loops
-
-Evaluation
-
-* math
-* string
-* function
+* string operations
+* array operations
+* custom functions
 

@@ -47,6 +47,7 @@ const leftparan = tokenType('leftparan')
 const rightparan = tokenType('rightparan')
 const if_ = keyword('if')
 const return_ = keyword('return')
+const else_ = keyword('else')
 const blockbegin = tokenType('blockbegin')
 const blockend = tokenType('blockend')
 const newline = tokenType('newline')
@@ -57,18 +58,23 @@ const string = tokenType('string_literal')
 main -> statements {% d => d %}
 
 statements
-    -> statement %newline:+ statements
+    -> line_statement %newline:+ statements
         {% d => [d[0], ...d[2]] %}
-    |  statement {% d => [d[0]] %}
-    |  null {% () => [] %}
+    |  block_statement statements
+        {% d => [d[0], ...d[1]] %}
+    |  line_statement  {% d => [d[0]] %}
+    |  block_statement {% d => [d[0]] %}
+    |  null            {% () => [] %}
 
-statement
-    -> if_statement        {% first %}
-    |  function_definition {% first %}
-    |  function_definition_short {% first %}
-    |  function_call       {% first %}
-    |  assignment          {% first %}
-    |  expression          {% first %}
+block_statement
+    -> if_statement {% id %}
+    | function_definition {% id %}
+
+line_statement
+    -> function_definition_short {% first %}
+    |  function_call             {% first %}
+    |  assignment                {% first %}
+    |  expression                {% first %}
 
 function_body_statements
     -> function_body_statement %newline function_body_statements
@@ -139,7 +145,19 @@ if_statement
     -> %if_ expression %blockbegin %newline
             statements 
         %newline:? %blockend
-        {% d => ({ type: 'if_statement', cond: d[1], consequent: d[4] }) %}
+        else_clause:?
+        {% d => ({
+            type: 'if_statement',
+            cond: d[1], 
+            consequent: d[4],
+            alternate: d[7]
+        }) %}
+
+else_clause
+    -> %else_ %blockbegin %newline
+            statements
+        %newline:? %blockend
+        {% d => d[3] %}
 
 expression -> term {% first %}
 

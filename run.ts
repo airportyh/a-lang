@@ -11,7 +11,7 @@ console.log("Program:");
 console.log("----------------------------------------------");
 const lines = code.split("\n");
 lines.forEach((line, idx) => {
-    console.log(`${idx + 1}\t${line}`);
+    console.log(`${idx + 1}:  ${line}`);
 });
 console.log();
 
@@ -24,6 +24,10 @@ tokens.forEach((token, idx) => {
 console.log();
 
 parser.feed(tokens);
+if (parser.results.length === 0) {
+    console.log("No parse tree found.");
+    process.exit(1);
+}
 const ast = parser.results[0][0];
 console.log("Parser Output:");
 console.log("----------------------------------------------");

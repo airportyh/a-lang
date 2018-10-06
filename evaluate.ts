@@ -1,10 +1,10 @@
 import { Op } from "./tokenize/tokenize";
 
-export function evaluate(statements, context): void {
-    return evaluateAST(statements, context);
+interface Dictionary<T> {
+    [key: string]: T;
 }
 
-type Statement = Assignment | FunctionCall;
+type Statement = Assignment | FunctionCall | IfStatement;
 type Assignment = { type: "assignment", lhs: Identifier, rhs: Expression };
 type Identifier = { type: "identifier", name: string };
 type Expression = BinaryExpression | Identifier | ArrayLiteral | StringLiteral | Num | FunctionCall | Negative;
@@ -14,12 +14,18 @@ type BinaryExpression = { type: "bin_op", op: Op, lhs: Expression, rhs: Expressi
 type FunctionCall = { type: "function_call", fn: string, arguments: Expression[] };
 type ArrayLiteral = { type: "array_literal", items: Expression[] };
 type StringLiteral = { type: "string_literal", string: string };
+type IfStatement = {
+    type: "if_statement", 
+    cond: Expression, 
+    consequent: Statement[],
+    alternate: Statement[]
+};
 type Value = any;
 type ProgramContext = {
     [key: string]: number;
 };
 
-const functionMap = {
+const functionMap: Dictionary<Function> = {
     print: (...args) => console.log(args.join("")),
     log: (n) => Math.log(n) / Math.log(10),
     log2: (n) => Math.log(n) / Math.log(2),
@@ -28,7 +34,21 @@ const functionMap = {
     round: Math.round
 }
 
-export function evaluateAST(statements: Statement[], context: ProgramContext): void {
+const operatorMap: Dictionary<Function> = {
+    "+": (n, m) => n + m,
+    "-": (n, m) => n - m,
+    "*": (n, m) => n * m,
+    "/": (n, m) => n / m,
+    "^": Math.pow,
+    ">": (n, m) => n > m,
+    "<": (n, m) => n < m,
+};
+
+export function evaluate(statements: Statement[], context: ProgramContext): void {
+    return evaluateStatements(statements, context);
+}
+
+export function evaluateStatements(statements: Statement[], context: ProgramContext): void {
     for (let statement of statements) {
         evaluateStatement(statement, context);
     }
@@ -39,8 +59,17 @@ function evaluateStatement(statement: Statement, context: ProgramContext): void 
         context[statement.lhs.name] = evaluateExpression(statement.rhs, context);
     } else if (statement.type === "function_call") {
         return evaluateExpression(statement, context);
+    } else if (statement.type === "if_statement") {
+        let cond = evaluateExpression(statement.cond, context);
+        if (cond === true) {
+            evaluateStatements(statement.consequent, context);
+        } else if (cond === false) {
+            evaluateStatements(statement.alternate, context);
+        } else {
+            throw new Error(`Condition result is supposed to be a boolean, but was ${JSON.stringify(cond)}`);
+        }
     } else {
-        // throw new Error(`Unknown statement type ${statement.type}.`);
+        throw new Error(`Unknown statement type ${statement["type"]}: : ${JSON.stringify(statement)}.`);
     }
 }
 
@@ -56,17 +85,7 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
                 ` ${expression.op} ${JSON.stringify(rhs)} because` +
                 `I can only do that with numbers.`);
         }
-        if (expression.op === "+") {
-            return lhs + rhs;
-        } else if (expression.op === "-") {
-            return lhs - rhs;
-        } else if (expression.op === "*") {
-            return lhs * rhs;
-        } else if (expression.op === "/") {
-            return lhs / rhs;
-        } else if (expression.op === "^") {
-            return Math.pow(lhs, rhs);
-        }
+        return operatorMap[expression.op](lhs, rhs);
     } else if (expression.type === "identifier") {
         if (!(expression.name in context)) {
             throw new Error(`Variable ${expression.name} is not found.`);
@@ -82,6 +101,6 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
     } else if (expression.type === "negative") {
         return - evaluateExpression(expression.value, context);
     } else {
-        //throw new Error(`Unknown expression type ${expression.type}: ${JSON.stringify(expression)}`);
+        throw new Error(`Unknown expression type ${expression["type"]}: ${JSON.stringify(expression)}`);
     }
 }

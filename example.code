@@ -1,3 +1,6 @@
-n = 5 ^ 2
+n = -9
 if n > 0:
-    print("Got got it")
+    print("yea!")
+else:
+    print("you are stupid!")
+print(n)
