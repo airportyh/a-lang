@@ -1,6 +1,6 @@
 {
   "name": "ami-lang",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "scripts": {
     "start": "npm run gen-parser; ts-node bin/run.ts",
