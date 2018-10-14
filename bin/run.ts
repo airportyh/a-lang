@@ -1,12 +1,20 @@
 import * as nearley from "nearley";
-import * as grammar from "./parser/grammar.js";
+import * as grammar from "../parser/parser.js";
 import * as fs from "fs";
-import { tokenize } from "./tokenize/tokenize";
-import { evaluate } from "./evaluate/evaluate";
+import { tokenize } from "../tokenize/tokenize";
+import { evaluate } from "../evaluate/evaluate";
+
+const filename = process.argv[2];
+
+if (!filename) {
+    console.log("Expected a file name.");
+    process.exit(1);
+}
+console.log(`Executing file "${filename}"`);
 
 // Create a Parser object from our grammar.
 const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-const code = fs.readFileSync("./example.code") + "";
+const code = fs.readFileSync(filename) + "";
 console.log("Program:");
 console.log("----------------------------------------------");
 const lines = code.split("\n");

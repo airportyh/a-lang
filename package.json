@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pre-build": "mkdir build",
-    "build-parser": "npm run pre-build; nearleyc parser/grammar.ne -o build/grammar.js",
-    "test": "npm build-parser; ts-node run"
+    "pre-build": "mkdir -p build",
+    "gen-parser": "npm run pre-build; nearleyc parser/parser.ne -o parser/parser.js",
+    "test": "jest",
+    "tdd": "jest --watch",
+    "build": "npm run gen-parser; tsc --project ."
   },
   "keywords": [],
   "author": "",

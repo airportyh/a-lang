@@ -1,8 +1,8 @@
 import * as assert from "assert";
 import { toRPN, parse } from "./shunting-yard-parser";
 import * as util from "util";
-import { evaluate } from "./evaluate";
-import { tokenize } from "./tokenize";
+import { evaluate } from "../evaluate/evaluate";
+import { tokenize } from "../tokenize/tokenize";
 
 assert.deepEqual(toRPN("1 + 1"), 
     [{ type: 'number', value: 1 },
