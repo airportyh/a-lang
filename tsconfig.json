@@ -2,10 +2,11 @@
     "compilerOptions": {
         "lib": ["es2015", "es2016"],
         "noImplicitAny": false,
+        "target": "es5",
         "strictNullChecks": true,
+        "declaration": true,
         "module": "commonjs",
-        "outDir": "build",
-        "allowJs": true
+        "outDir": "build"
     },
     "files": ["bin/run.ts"]
 }
