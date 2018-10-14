@@ -6,7 +6,7 @@
         "strictNullChecks": true,
         "declaration": true,
         "module": "commonjs",
-        "outDir": "build"
+        "outDir": "dist"
     },
     "files": ["bin/run.ts"]
 }

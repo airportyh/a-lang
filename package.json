@@ -1,17 +1,20 @@
 {
-  "name": "ts-calc",
+  "name": "ami-lang",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "start": "npm run gen-parser; ts-node bin/run.ts",
-    "pre-build": "mkdir -p build",
+    "pre-build": "mkdir -p dist",
     "gen-parser": "npm run pre-build; nearleyc parser/parser.ne -o parser/parser.js",
     "test": "jest",
     "tdd": "jest --watch",
-    "clean": "rm -fr build",
-    "copy-parser": "cp -r parser build/parser",
-    "build": "npm run gen-parser; npm run copy-parser; tsc"
+    "clean": "rm -fr dist",
+    "copy-parser": "cp -r parser dist/parser",
+    "build": "npm run gen-parser; npm run copy-parser; tsc",
+    "prepublish": "npm run build"
+  },
+  "bin": {
+    "ami": "dist/bin/run.js"
   },
   "keywords": [],
   "author": "",
