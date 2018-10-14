@@ -1,6 +1,6 @@
 {
   "name": "ami-lang",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "scripts": {
     "start": "npm run gen-parser; ts-node bin/run.ts",
@@ -16,6 +16,9 @@
   "bin": {
     "ami": "dist/bin/run.js"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
