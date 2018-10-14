@@ -3,7 +3,7 @@
   "version": "1.0.5",
   "description": "",
   "scripts": {
-    "start": "npm run gen-parser; ts-node bin/run.ts",
+    "start": "npm run gen-parser; ts-node bin/execute.ts",
     "pre-build": "mkdir -p dist",
     "gen-parser": "npm run pre-build; nearleyc parser/parser.ne -o parser/parser.js",
     "test": "jest",
@@ -24,8 +24,9 @@
   "license": "ISC",
   "dependencies": {
     "assert": "^1.4.1",
+    "lodash": "^4.17.11",
     "nearley": "^2.15.1",
-    "lodash": "^4.17.11"
+    "yargs": "^12.0.2"
   },
   "devDependencies": {
     "@types/jest": "^23.3.2",
