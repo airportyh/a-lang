@@ -1,5 +1,5 @@
 import * as nearley from "nearley";
-import * as grammar from "./nearley-grammar.js";
+import * as grammar from "./parser/grammar.js";
 import * as fs from "fs";
 import { tokenize } from "./tokenize/tokenize";
 import { evaluate } from "./evaluate/evaluate";

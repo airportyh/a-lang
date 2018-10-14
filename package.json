@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "nearleyc nearley-grammar.ne -o nearley-grammar.js; ts-node run",
-    "build": "nearleyc nearley-grammar.ne -o nearley-grammar.js; tsc --project ."
+    "pre-build": "mkdir build",
+    "build-parser": "npm run pre-build; nearleyc parser/grammar.ne -o build/grammar.js",
+    "test": "npm build-parser; ts-node run"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +25,9 @@
   },
   "devDependencies": {
     "@types/node": "^10.11.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
   }
 }
