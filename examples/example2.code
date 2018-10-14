@@ -1,0 +1,17 @@
+x = 1
+upto = 21
+header = ""
+while x < upto:
+    header = header + "\t" + x
+    x = x + 1
+print(header)
+x = 1
+while x < upto:
+    y = 1
+    row = x
+    while y < upto:
+        product = x * y
+        row = row + "\t" + product
+        y = y + 1
+    print(row)
+    x = x + 1

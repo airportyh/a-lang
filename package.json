@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "nearleyc nearley-grammar.ne -o nearley-grammar.js; ts-node run"
+    "test": "nearleyc nearley-grammar.ne -o nearley-grammar.js; ts-node run",
+    "build": "nearleyc nearley-grammar.ne -o nearley-grammar.js; tsc --project ."
   },
   "keywords": [],
   "author": "",

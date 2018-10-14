@@ -1,0 +1,12 @@
+create tally as a dictionary
+create words as a list: to, be, or, not, to, be
+
+for each word in words:
+    if the word is in the tally then
+        + 1 to the word in the tally
+    else
+         the word in the tally
+
+where increment is [
+    take a number and return the number + 1
+]

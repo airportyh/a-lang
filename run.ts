@@ -2,7 +2,7 @@ import * as nearley from "nearley";
 import * as grammar from "./nearley-grammar.js";
 import * as fs from "fs";
 import { tokenize } from "./tokenize/tokenize";
-import { evaluate } from "./evaluate";
+import { evaluate } from "./evaluate/evaluate";
 
 // Create a Parser object from our grammar.
 const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));

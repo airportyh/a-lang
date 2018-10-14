@@ -1,0 +1,15 @@
+{
+  "name": "fun-lang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nearleyc grammar.ne -o grammar.js; ts-node run"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^10.11.4",
+    "nearley": "^2.15.1"
+  }
+}

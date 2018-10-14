@@ -1,0 +1,16 @@
+prompt(title, message) {
+    document.render(
+        <div>
+            <h1>{title}</h1>
+            <label>{message}</label>
+            <input ref="field" type="text"/>
+            <button onClick={handle_click(field)}></button>
+        </div>
+    )
+
+    handle_click(field) {
+        resume field.value
+    }
+    result = pause
+    return result
+}

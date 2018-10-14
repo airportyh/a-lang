@@ -1,3 +1,5 @@
+* get executable
+* switch operator precedence for >
 * 2-char operators: ==, >=, <=
 * else-if clauses
 * and and or operators

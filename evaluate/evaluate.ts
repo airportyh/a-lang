@@ -1,4 +1,4 @@
-import { Op } from "./tokenize/tokenize";
+import { Op } from "../tokenize/tokenize";
 
 type Dictionary<T> = {
     [key: string]: T
@@ -104,12 +104,6 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
     } else if (expression.type === "bin_op") {
         let lhs = evaluateExpression(expression.lhs, context);
         let rhs = evaluateExpression(expression.rhs, context);
-        if (typeof lhs !== "number" || typeof rhs !== "number") {
-            throw new Error(
-                `Cannot perform ${JSON.stringify(lhs)}` +
-                ` ${expression.op} ${JSON.stringify(rhs)} because` +
-                `I can only do that with numbers.`);
-        }
         return operatorMap[expression.op](lhs, rhs);
     } else if (expression.type === "identifier") {
         if (!(expression.name in context)) {
