@@ -1,6 +1,6 @@
 {
   "name": "ami-lang",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "scripts": {
     "start": "npm run gen-parser; ts-node bin/run.ts",
@@ -23,19 +23,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "assert": "^1.4.1"
+  },
+  "devDependencies": {
     "@types/jest": "^23.3.2",
-    "assert": "^1.4.1",
+    "@types/node": "^10.11.3",
     "jest": "^23.6.0",
     "lodash": "^4.17.11",
     "moo": "^0.4.3",
     "nearley": "^2.15.1",
-    "pegjs": "^0.10.0",
     "ts-jest": "^23.10.3",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.1"
-  },
-  "devDependencies": {
-    "@types/node": "^10.11.3"
   },
   "jest": {
     "preset": "ts-jest",
