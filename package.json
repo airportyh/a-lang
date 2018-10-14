@@ -9,12 +9,12 @@
     "test": "jest",
     "tdd": "jest --watch",
     "clean": "rm -fr dist",
-    "copy-parser": "cp -r parser dist/parser",
-    "build": "npm run gen-parser; npm run copy-parser; tsc",
+    "copy": "cp -r parser dist/parser; cp bin/run.js dist/bin/run.js",
+    "build": "npm run gen-parser; tsc; npm run copy",
     "prepublish": "npm run build"
   },
   "bin": {
-    "ami": "dist/bin/run.js"
+    "ami": "./dist/bin/run.js"
   },
   "files": [
     "dist"

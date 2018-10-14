@@ -8,5 +8,5 @@
         "module": "commonjs",
         "outDir": "dist"
     },
-    "files": ["bin/run.ts"]
+    "files": ["bin/execute.ts"]
 }
