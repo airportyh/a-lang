@@ -27,16 +27,14 @@ const ZCharCode = 'Z'.charCodeAt(0);
 const zeroCharCode = '0'.charCodeAt(0);
 const nineCharCode = '9'.charCodeAt(0);
 
-
-
 function isLetter(char: string) {
     const charCode = char.charCodeAt(0);
     return (charCode >= aCharCode && charCode <= zCharCode) || 
         (charCode >= ACharCode && charCode <= ZCharCode);
 }
 
-function isLetterOrDigit(char: string) {
-    return isLetter(char) || isDigit(char);
+function isLetterOrDigitOrUnderscore(char: string) {
+    return isLetter(char) || isDigit(char) || char === "_";
 }
 
 function isDigit(char: string) {
@@ -171,7 +169,7 @@ export function tokenize(input: string): Token[] {
                 }
                 break;
             case "word":
-                if (isLetterOrDigit(char)) {
+                if (isLetterOrDigitOrUnderscore(char)) {
                     word += char;
                 } else if (char === "(") {
                     pushWord();

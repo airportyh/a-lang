@@ -1,0 +1,5 @@
+name = prompt("What is your name?")
+print("Hello, ", name, "!")
+age = number(prompt("How old are you?"))
+year_born = 2018 - age
+print("Nice! So you were born in ", year_born, ".")

@@ -1,5 +1,6 @@
 import { Op } from "../tokenize/tokenize";
 import * as _ from "lodash";
+import * as readline from "readline";
 
 type Dictionary<T> = {
     [key: string]: T
@@ -55,8 +56,26 @@ const functionMap: Dictionary<Function> = {
     sqr: (n) => n * n,
     sqrt: Math.sqrt,
     length: lengthFn,
-    string: String
+    string: String,
+    number: Number
 };
+
+const asyncFunctionMap: Dictionary<Function> = {
+    prompt: promptFn
+};
+
+function promptFn(prompt) {
+    return new Promise((accept) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        rl.question(prompt + " ", (answer) => {
+            accept(answer);
+            rl.close();
+        });
+    });
+}
 
 function lengthFn(thing) {
     if (!_.isArray(thing) && !_.isString(thing)) {
@@ -161,9 +180,14 @@ async function evaluateExpression(expression: Expression, context: ProgramContex
         let fn = context[expression.fn];
         if (fn) {
             return await evaluateCustomFunction(fn, args, context);
-        } else {
+        } else if (expression.fn in functionMap) {
             fn = functionMap[expression.fn];
             return fn(...args);
+        } else if (expression.fn in asyncFunctionMap) {
+            fn = asyncFunctionMap[expression.fn];
+            return await fn(...args);
+        } else {
+            throw new Error(`Function ${expression.fn} is not available.`);
         }
     } else if (expression.type === "negative") {
         return - await evaluateExpression(expression.value, context);

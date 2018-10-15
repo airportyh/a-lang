@@ -1,10 +1,8 @@
 ## Functionality
 
-* prompting
-* asks for your name and remembers it, and addresses you in error messages.
-
 ## Error Handling
 
+* asks for your name and remembers it, and addresses you in error messages.
 * error when variable not found, give suggestions and explanation
 * error when wrong number of arguments?
 * improve tokenizer error message

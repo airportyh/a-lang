@@ -127,6 +127,13 @@ describe('tokenize', () => {
         ]);
     });
 
+    it("tokenizes words and allows underscores too", () => {
+        expect(tokenize("that_thing"))
+        .toEqual([
+            { type: 'word', word: 'that_thing' }
+        ]);
+    });
+
     // Indented blocks
     // https://en.wikipedia.org/wiki/Off-side_rule
         
