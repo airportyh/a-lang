@@ -94,41 +94,41 @@ const operatorMap: Dictionary<Function> = {
     "==": (n, m) => n === m
 };
 
-export function evaluate(statements: Statement[], context: ProgramContext): void {
-    return evaluateStatements(statements, context);
+export async function evaluate(statements: Statement[], context: ProgramContext): Promise<void> {
+    return await evaluateStatements(statements, context);
 }
 
-export function evaluateStatements(statements: Statement[], context: ProgramContext): void {
+export async function evaluateStatements(statements: Statement[], context: ProgramContext): Promise<void> {
     for (let statement of statements) {
-        evaluateStatement(statement, context);
+        await evaluateStatement(statement, context);
     }
 }
 
-function evaluateStatement(statement: Statement, context: ProgramContext): void {
+async function evaluateStatement(statement: Statement, context: ProgramContext): Promise<void> {
     if (statement.type === "assignment") {
-        context[statement.lhs.name] = evaluateExpression(statement.rhs, context);
+        context[statement.lhs.name] = await evaluateExpression(statement.rhs, context);
     } else if (statement.type === "function_call") {
-        return evaluateExpression(statement, context);
+        return await evaluateExpression(statement, context);
     } else if (statement.type === "if_statement") {
         let cond: boolean = false;
         for (const clause of statement.clauses) {
-            cond = evaluateExpression(clause.cond, context);
+            cond = await evaluateExpression(clause.cond, context);
             if (typeof cond !== "boolean") {
                 throw new Error(`Condition result is supposed to be a boolean, but was ${JSON.stringify(cond)}`);
             }
             if (cond) {
-                evaluateStatements(clause.consequent, context);
+                await evaluateStatements(clause.consequent, context);
                 break;
             }
         }
         if (!cond) {
-            evaluateStatements(statement.alternate, context);
+            await evaluateStatements(statement.alternate, context);
         }
     } else if (statement.type === "while_loop") {
-        let cond = evaluateExpression(statement.cond, context);
+        let cond = await evaluateExpression(statement.cond, context);
         while (cond === true) {
-            evaluateStatements(statement.body, context);
-            cond = evaluateExpression(statement.cond, context);
+            await evaluateStatements(statement.body, context);
+            cond = await evaluateExpression(statement.cond, context);
             if (typeof cond !== "boolean") {
                 throw new Error(`Condition result is supposed to be a boolean, but was ${JSON.stringify(cond)}`);
             }
@@ -140,12 +140,12 @@ function evaluateStatement(statement: Statement, context: ProgramContext): void 
     }
 }
 
-function evaluateExpression(expression: Expression, context: ProgramContext): Value {
+async function evaluateExpression(expression: Expression, context: ProgramContext): Promise<Value> {
     if (expression.type === "number") {
         return expression.value;
     } else if (expression.type === "bin_op") {
-        let lhs = evaluateExpression(expression.lhs, context);
-        let rhs = evaluateExpression(expression.rhs, context);
+        let lhs = await evaluateExpression(expression.lhs, context);
+        let rhs = await evaluateExpression(expression.rhs, context);
         return operatorMap[expression.op](lhs, rhs);
     } else if (expression.type === "identifier") {
         if (!(expression.name in context)) {
@@ -153,23 +153,23 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
         }
         return context[expression.name];
     } else if (expression.type === "array_literal") {
-        return expression.items.map((item) => evaluateExpression(item, context));
+        return await Promise.all(expression.items.map((item) => evaluateExpression(item, context)));
     } else if (expression.type === "string_literal") {
         return expression.string;
     } else if (expression.type === "function_call") {
-        let args = expression.arguments.map((arg) => evaluateExpression(arg, context));
+        let args = await Promise.all(expression.arguments.map((arg) => evaluateExpression(arg, context)));
         let fn = context[expression.fn];
         if (fn) {
-            return evaluateCustomFunction(fn, args, context);
+            return await evaluateCustomFunction(fn, args, context);
         } else {
             fn = functionMap[expression.fn];
             return fn(...args);
         }
     } else if (expression.type === "negative") {
-        return - evaluateExpression(expression.value, context);
+        return - await evaluateExpression(expression.value, context);
     } else if (expression.type === "index_access") {
-        const subject = evaluateExpression(expression.subject, context);
-        const index = evaluateExpression(expression.index, context);
+        const subject = await evaluateExpression(expression.subject, context);
+        const index = await evaluateExpression(expression.index, context);
         if (!_.isArray(subject) && !_.isString(subject)) {
             throw new Error(`Attempting to perform index access of something that is neither an array or string: ${JSON.stringify(subject)}. Sorry, but I can't do that Dave.`)
         }
@@ -179,17 +179,17 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
     }
 }
 
-function evaluateCustomFunction(fun: FunctionDefinition, args: any[], context: ProgramContext): any {
+async function evaluateCustomFunction(fun: FunctionDefinition, args: any[], context: ProgramContext): Promise<any> {
     for (let i = 0; i < fun.parameters.length; i++) {
         let param = fun.parameters[i];
         context[param.name] = args[i];
     }
     for (let statement of fun.body) {
         if (statement.type === "return_statement") {
-            let result = evaluateExpression(statement.value, context);
+            let result = await evaluateExpression(statement.value, context);
             return result;
         } else {
-            evaluateStatement(statement, context);
+            await evaluateStatement(statement, context);
         }
     }
     return null;

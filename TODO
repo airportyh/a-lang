@@ -1,7 +1,7 @@
 ## Functionality
 
 * prompting
-* string conversion
+* asks for your name and remembers it, and addresses you in error messages.
 
 ## Error Handling
 
