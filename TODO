@@ -1,13 +1,8 @@
-* 2-char operators: ==, >=, <=
-* else-if clauses
-* and and or operators
-* for loops
-* string operations
-* array operations
-* function scoped variables
-* array index and length
+## Functionality
 
-* write README file
+* prompting
+
+## Error Handling
 
 * error when variable not found, give suggestions and explanation
 * error when wrong number of arguments?
@@ -15,5 +10,10 @@
 * improve parser error message
 * line numbers
 
+## Stuff
 
-
+* and and or operators
+* Setup Up a Test Suite
+* write README file
+* for loops
+* function scoped variables

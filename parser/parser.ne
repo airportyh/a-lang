@@ -1,5 +1,6 @@
 @{%
 const _ = require('lodash');
+const util = require('util');
 
 function join(things) {
     return _.flatten(things).join("");
@@ -39,6 +40,9 @@ const exp = operator('^')
 const comma = operator(',')
 const gt = operator('>')
 const lt = operator('<')
+const gte = operator('>=')
+const lte = operator('<=')
+const eql = operator('==')
 const leftbracket = operator('[')
 const rightbracket = operator(']')
 const assignment = operator('=')
@@ -73,10 +77,10 @@ block_statement
     | while_loop    {% id %}
 
 line_statement
-    -> function_definition_short {% first %}
-    |  function_call             {% first %}
-    |  assignment                {% first %}
-    |  expression                {% first %}
+    -> function_definition_short {% id %}
+    |  function_call             {% id %}
+    |  assignment                {% id %}
+    |  expression                {% id %}
 
 function_body_statements
     -> function_body_statement %newline function_body_statements
@@ -85,13 +89,13 @@ function_body_statements
     |  null {% () => [] %}
 
 function_body_statement
-    -> if_statement        {% first %}
-    |  function_definition {% first %}
-    |  function_definition_short {% first %}
-    |  function_call       {% first %}
-    |  assignment          {% first %}
-    |  return_statement    {% first %}
-    |  expression          {% first %}
+    -> if_statement        {% id %}
+    |  function_definition {% id %}
+    |  function_definition_short {% id %}
+    |  function_call       {% id %}
+    |  assignment          {% id %}
+    |  return_statement    {% id %}
+    |  expression          {% id %}
 
 assignment
     -> identifier %assignment expression
@@ -147,12 +151,34 @@ if_statement
     -> %if_ expression %blockbegin %newline
             statements 
         %newline:? %blockend
+        else_if_clauses:?
         else_clause:?
+        {% d => {
+            const firstClause = {
+                type: 'if_clause',
+                cond: d[1],
+                consequent: d[4]
+            };
+            const restClauses = d[7] || [];
+            return ({
+                type: 'if_statement',
+                clauses: [firstClause, ...restClauses],
+                alternate: d[8] || []
+            })
+         } %}
+
+else_if_clauses
+    -> else_if_clause else_if_clauses {% d => [d[0], ...d[1]] %}
+    |  else_if_clause {% d => [d[0]] %}
+
+else_if_clause
+    -> %else_ %if_ expression %blockbegin %newline
+        statements
+        %newline:? %blockend
         {% d => ({
-            type: 'if_statement',
-            cond: d[1], 
-            consequent: d[4],
-            alternate: d[7]
+            type: "if_clause",
+            cond: d[2],
+            consequent: d[5]
         }) %}
 
 else_clause
@@ -171,11 +197,14 @@ while_loop
             body: d[4]
         }) %}
 
-expression -> comparison {% first %}
+expression -> comparison {% id %}
 
 comparison_op
-    -> %gt {% first %}
-    |  %lt {% first %}
+    -> %gt  {% id %}
+    |  %lt  {% id %}
+    |  %gte {% id %}
+    |  %lte {% id %}
+    |  %eql {% id %}
 
 comparison
     -> term comparison_op comparison
@@ -185,33 +214,42 @@ comparison
             op: d[1].op,
             rhs: d[2]
         }) %}
-    |  term {% first %}
+    |  term {% id %}
 
 term
     -> factor (%plus|%minus) term
         {% d => ({ type: 'bin_op', op: d[1][0].op, lhs: d[0], rhs: d[2] }) %}
-    |  factor {% first %}
+    |  factor {% id %}
 
 factor
     -> exponent (%times|%divide) factor
         {% d => ({ type: 'bin_op', op: d[1][0].op, lhs: d[0], rhs: d[2] }) %}
-    |  exponent {% first %}
+    |  exponent {% id %}
 
 exponent
     -> single %exp exponent
         {% d => ({ type: 'bin_op', op: d[1].op, lhs: d[0], rhs: d[2] }) %}
-    |  single {% first %}
+    |  single {% id %}
 
 negative
     -> %minus expression {% d => ({ type: 'negative', value: d[1] }) %}
 
 single
-    -> %number {% first %}
-    |  negative {% first %}
-    |  identifier {% first %}
-    |  function_call {% first %}
-    |  %string {% first %}
-    |  array_literal {% first %}
+    -> %number {% id %}
+    |  negative {% id %}
+    |  identifier {% id %}
+    |  function_call {% id %}
+    |  %string {% id %}
+    |  array_literal {% id %}
     |  %leftparan expression %rightparan {% second %}
+    |  index_access {% id %}
+
+index_access
+    -> expression %leftbracket expression %rightbracket
+    {% d => ({
+        type: "index_access",
+        subject: d[0],
+        index: d[2]
+    }) %}
 
 identifier -> %identifier {% d => ({ type: 'identifier', name: d[0].word }) %}

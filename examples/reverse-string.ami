@@ -1,0 +1,7 @@
+string = "bananas"
+result = ""
+i = 0
+while i <= 6:
+    result = string[i] + result
+    i = i + 1
+print(result)

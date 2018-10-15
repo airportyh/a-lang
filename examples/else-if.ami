@@ -1,0 +1,8 @@
+word = "bananas"
+
+if word == "bananas":
+    print("Yum!")
+else if word == "apples":
+    print("Delicious!")
+else:
+    print("Yuck!")

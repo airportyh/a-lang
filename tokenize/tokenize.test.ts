@@ -346,4 +346,39 @@ describe('tokenize', () => {
             { type: "blockend" }
         ]);
     });
+
+    it("parses 2-character operators", () => {
+        expect(tokenize("1 >= 2 == 3 <= 4"))
+        .toEqual([
+            { type: "number", value: 1 },
+            { type: "operator", op: ">=" },
+            { type: "number", value: 2 },
+            { type: "operator", op: "==" },
+            { type: "number", value: 3 },
+            { type: "operator", op: "<=" },
+            { type: "number", value: 4 }
+        ]);
+        expect(tokenize("1=="))
+        .toEqual([
+            { type: "number", value: 1 },
+            { type: "operator", op: "==" }
+        ]);
+        expect(tokenize("n=="))
+        .toEqual([
+            { type: "word", word: "n" },
+            { type: "operator", op: "==" }
+        ]);
+        const code = [
+            'yes:',
+            '  >='
+        ].join("\n");
+        expect(tokenize(code))
+        .toEqual([
+            { type: "word", word: "yes" },
+            { type: "blockbegin" },
+            { type: "newline" },
+            { type: "operator", op: ">=" },
+            { type: "blockend" }
+        ]);
+    });
 })

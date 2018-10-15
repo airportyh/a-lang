@@ -1,8 +1,11 @@
 import * as assert from "assert";
-import { isNumber } from "util";
 
 export type State = "open" | "number" | "word" | "start-indent-block" | "collect-line-indent" | "collect-string";
-export type Op = "+" | "-" | "*" | "/" | "^";
+export type Op = "+" | "-" | "*" | "/" | "^" | ">" | "<" | "=" | "[" | "]" | "==" | ">=" | "<=" | ",";
+const operators = new Set([
+    "+", "-", "*", "/", "^", ">", "<", "=", "[", "]",
+    "==", ">=", "<=", ","
+]);
 export type Operator = { type: "operator", op: Op };
 export type Token = 
 { type: "number", value: number } |
@@ -24,10 +27,7 @@ const ZCharCode = 'Z'.charCodeAt(0);
 const zeroCharCode = '0'.charCodeAt(0);
 const nineCharCode = '9'.charCodeAt(0);
 
-const operators = new Set([
-    "+", "-", "*", "/", "^", ">", "<", "=", "[", "]",
-    "==", ">=", "<="
-]);
+
 
 function isLetter(char: string) {
     const charCode = char.charCodeAt(0);
@@ -45,7 +45,7 @@ function isDigit(char: string) {
 }
 
 function isOperator(char: string): char is Op {
-    return "+-*/^><=,[]".indexOf(char) !== -1;
+    return operators.has(char);
 }
 
 function isIndentChar(char: string): char is IndentChar {
@@ -67,6 +67,7 @@ export function tokenize(input: string): Token[] {
     let string: string = "";
     while (i < input.length) {
         let char: string = input[i];
+        let twoChar: string = input.substr(i, 2);
         // console.log("state", state);
         // console.log("indentStack", indentStack);
         // console.log("char", char);
@@ -101,6 +102,12 @@ export function tokenize(input: string): Token[] {
                     tokens.push({ type: "leftparan" });
                 } else if (char === ")") {
                     tokens.push({ type: "rightparan" });
+                } else if (isOperator(twoChar)) {
+                    tokens.push({
+                        type: "operator",
+                        op: twoChar
+                    });
+                    i = i + 1;
                 } else if (isOperator(char)) {
                     tokens.push({
                         type: "operator",
@@ -118,7 +125,7 @@ export function tokenize(input: string): Token[] {
                     string = "";
                     state = "collect-string";
                 } else {
-                    throw new Error("Does not compute: " + JSON.stringify(char));
+                    throw new Error(`Tokenizer error: encountered ${JSON.stringify(char)} in state ${state}.`);
                 }
                 break;
             case "number":
@@ -132,6 +139,13 @@ export function tokenize(input: string): Token[] {
                     tokens.push({ type: "rightparan" });
                 } else if (char === " ") {
                     pushNumber();
+                } else if (isOperator(twoChar)) {
+                    pushNumber();
+                    tokens.push({
+                        type: "operator",
+                        op: twoChar
+                    });
+                    i = i + 1;
                 } else if (isOperator(char)) {
                     pushNumber();
                     tokens.push({
@@ -153,7 +167,7 @@ export function tokenize(input: string): Token[] {
                     string = "";
                     state = "collect-string";
                 } else {
-                    throw new Error("Does not compute: " + JSON.stringify(char));
+                    throw new Error(`Tokenizer error: encountered ${JSON.stringify(char)} in state ${state}.`);
                 }
                 break;
             case "word":
@@ -167,6 +181,13 @@ export function tokenize(input: string): Token[] {
                     tokens.push({ type: "rightparan" });
                 } else if (char === " ") {
                     pushWord();
+                } else if (isOperator(twoChar)) {
+                    pushWord();
+                    tokens.push({
+                        type: "operator",
+                        op: twoChar
+                    });
+                    i = i + 1;
                 } else if (isOperator(char)) {
                     pushWord();
                     tokens.push({
@@ -188,7 +209,7 @@ export function tokenize(input: string): Token[] {
                     string = "";
                     state = "collect-string";
                 } else {
-                    throw new Error("Does not compute: " + JSON.stringify(char));
+                    throw new Error(`Tokenizer error: encountered ${JSON.stringify(char)} in state ${state}.`);
                 }
                 break;
             case "start-indent-block":
@@ -210,6 +231,14 @@ export function tokenize(input: string): Token[] {
                     pushIndent();
                     state = "open";
                     tokens.push({ type: "rightparan" });
+                } else if (isOperator(twoChar)) {
+                    pushIndent();
+                    state = "open";
+                    tokens.push({
+                        type: "operator",
+                        op: twoChar
+                    });
+                    i = i + 1;
                 } else if (isOperator(char)) {
                     pushIndent();
                     state = "open";
@@ -228,7 +257,7 @@ export function tokenize(input: string): Token[] {
                     string = "";
                     state = "collect-string";
                 } else {
-                    throw new Error("Does not compute: " + JSON.stringify(char));
+                    throw new Error(`Tokenizer error: encountered ${JSON.stringify(char)} in state ${state}.`);
                 }
                 break;
             case "collect-string":

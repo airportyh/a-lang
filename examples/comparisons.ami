@@ -1,0 +1,6 @@
+i = 1
+while i <= 10:
+    if i == 5:
+        print("Hiya!")
+    print("Miya!")
+    i = i + 1

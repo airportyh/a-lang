@@ -1,4 +1,5 @@
 import { Op } from "../tokenize/tokenize";
+import * as _ from "lodash";
 
 type Dictionary<T> = {
     [key: string]: T
@@ -7,7 +8,7 @@ type Dictionary<T> = {
 type Statement = Assignment | FunctionCall | IfStatement | WhileLoop | FunctionDefinition | ReturnStatement;
 type Assignment = { type: "assignment", lhs: Identifier, rhs: Expression };
 type Identifier = { type: "identifier", name: string };
-type Expression = BinaryExpression | Identifier | ArrayLiteral | StringLiteral | Num | FunctionCall | Negative;
+type Expression = BinaryExpression | Identifier | ArrayLiteral | StringLiteral | Num | FunctionCall | Negative | IndexAccess;
 type Negative = { type: "negative", value: Expression };
 type Num = { type: "number", value: number };
 type WhileLoop = { type: "while_loop", cond: Expression, body: Statement[] };
@@ -15,6 +16,7 @@ type BinaryExpression = { type: "bin_op", op: Op, lhs: Expression, rhs: Expressi
 type FunctionCall = { type: "function_call", fn: string, arguments: Expression[] };
 type ArrayLiteral = { type: "array_literal", items: Expression[] };
 type StringLiteral = { type: "string_literal", string: string };
+type IndexAccess = { type: "index_access", subject: Expression, index: Expression };
 type FunctionDefinition = {
     type: "function_definition", 
     name: string, 
@@ -28,10 +30,16 @@ type ReturnStatement = {
 
 type IfStatement = {
     type: "if_statement", 
-    cond: Expression, 
-    consequent: Statement[],
+    clauses: IfClause[],
     alternate: Statement[]
 };
+
+type IfClause = {
+    type: "if_clause",
+    cond: Expression,
+    consequent: Statement[]
+};
+
 type Value = any;
 type ProgramContext = {
     [key: string]: any;
@@ -45,17 +53,44 @@ const functionMap: Dictionary<Function> = {
     sin: Math.sin,
     round: Math.round,
     sqr: (n) => n * n,
-    sqrt: Math.sqrt
+    sqrt: Math.sqrt,
+    length: lengthFn
 };
 
+function lengthFn(thing) {
+    if (!_.isArray(thing) && !_.isString(thing)) {
+        throw new Error(`Attempting to get the length of something that is neither a string or an array (${JSON.stringify(thing)}). Sorry but I can't do that, Dave.`);
+    }
+    return thing.length;
+}
+
+function addFn(n, m) {
+    if ((_.isArray(n) && !_.isArray(m)) ||
+        (_.isArray(m) && !_.isArray(n))) {
+        throw new Error(`Attempting to add an array (${JSON.stringify(n)}) to a non-array (${JSON.stringify(m)}). Sorry but I can't do that, Dave.`);
+    } else if (_.isArray(n) && _.isArray(m)) {
+        return n.concat(m);
+    }
+    const typeN = typeof n;
+    const typeM = typeof m;
+    if (typeN !== typeM) {
+        throw new Error(`Attempting to add a ${typeN} (${JSON.stringify(n)}) to a ${typeM} (${JSON.stringify(m)}). Sorry but I can't do that, Dave.`);
+    } else {
+        return n + m;
+    }
+}
+
 const operatorMap: Dictionary<Function> = {
-    "+": (n, m) => n + m,
+    "+": addFn,
     "-": (n, m) => n - m,
     "*": (n, m) => n * m,
     "/": (n, m) => n / m,
     "^": Math.pow,
     ">": (n, m) => n > m,
     "<": (n, m) => n < m,
+    ">=": (n, m) => n >= m,
+    "<=": (n, m) => n <= m,
+    "==": (n, m) => n === m
 };
 
 export function evaluate(statements: Statement[], context: ProgramContext): void {
@@ -74,13 +109,19 @@ function evaluateStatement(statement: Statement, context: ProgramContext): void 
     } else if (statement.type === "function_call") {
         return evaluateExpression(statement, context);
     } else if (statement.type === "if_statement") {
-        let cond = evaluateExpression(statement.cond, context);
-        if (cond === true) {
-            evaluateStatements(statement.consequent, context);
-        } else if (cond === false) {
+        let cond: boolean = false;
+        for (const clause of statement.clauses) {
+            cond = evaluateExpression(clause.cond, context);
+            if (typeof cond !== "boolean") {
+                throw new Error(`Condition result is supposed to be a boolean, but was ${JSON.stringify(cond)}`);
+            }
+            if (cond) {
+                evaluateStatements(clause.consequent, context);
+                break;
+            }
+        }
+        if (!cond) {
             evaluateStatements(statement.alternate, context);
-        } else {
-            throw new Error(`Condition result is supposed to be a boolean, but was ${JSON.stringify(cond)}`);
         }
     } else if (statement.type === "while_loop") {
         let cond = evaluateExpression(statement.cond, context);
@@ -125,6 +166,13 @@ function evaluateExpression(expression: Expression, context: ProgramContext): Va
         }
     } else if (expression.type === "negative") {
         return - evaluateExpression(expression.value, context);
+    } else if (expression.type === "index_access") {
+        const subject = evaluateExpression(expression.subject, context);
+        const index = evaluateExpression(expression.index, context);
+        if (!_.isArray(subject) && !_.isString(subject)) {
+            throw new Error(`Attempting to perform index access of something that is neither an array or string: ${JSON.stringify(subject)}. Sorry, but I can't do that Dave.`)
+        }
+        return subject[index];
     } else {
         throw new Error(`Unknown expression type ${expression["type"]}: ${JSON.stringify(expression)}`);
     }
