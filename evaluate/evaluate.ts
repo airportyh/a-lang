@@ -54,7 +54,8 @@ const functionMap: Dictionary<Function> = {
     round: Math.round,
     sqr: (n) => n * n,
     sqrt: Math.sqrt,
-    length: lengthFn
+    length: lengthFn,
+    string: String
 };
 
 function lengthFn(thing) {

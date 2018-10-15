@@ -1,6 +1,7 @@
 ## Functionality
 
 * prompting
+* string conversion
 
 ## Error Handling
 
@@ -13,7 +14,7 @@
 ## Stuff
 
 * and and or operators
-* Setup Up a Test Suite
+* Setup up a test suite
 * write README file
 * for loops
 * function scoped variables
