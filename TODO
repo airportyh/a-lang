@@ -1,5 +1,3 @@
-* write README file
-* switch operator precedence for >
 * 2-char operators: ==, >=, <=
 * else-if clauses
 * and and or operators
@@ -8,6 +6,8 @@
 * array operations
 * function scoped variables
 * array index and length
+
+* write README file
 
 * error when variable not found, give suggestions and explanation
 * error when wrong number of arguments?

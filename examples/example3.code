@@ -1,0 +1,5 @@
+n = 0
+if n + 1 > 4:
+    print("Yah!")
+else:
+    print("Nay!")

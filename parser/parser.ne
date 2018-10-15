@@ -171,7 +171,21 @@ while_loop
             body: d[4]
         }) %}
 
-expression -> term {% first %}
+expression -> comparison {% first %}
+
+comparison_op
+    -> %gt {% first %}
+    |  %lt {% first %}
+
+comparison
+    -> term comparison_op comparison
+        {% d => ({
+            type: 'bin_op',
+            lhs: d[0],
+            op: d[1].op,
+            rhs: d[2]
+        }) %}
+    |  term {% first %}
 
 term
     -> factor (%plus|%minus) term
@@ -184,22 +198,8 @@ factor
     |  exponent {% first %}
 
 exponent
-    -> comparison %exp exponent
+    -> single %exp exponent
         {% d => ({ type: 'bin_op', op: d[1].op, lhs: d[0], rhs: d[2] }) %}
-    |  comparison {% first %}
-
-comparison_op
-    -> %gt {% first %}
-    |  %lt {% first %}
-
-comparison
-    -> single comparison_op comparison
-        {% d => ({
-            type: 'bin_op',
-            lhs: d[0],
-            op: d[1].op,
-            rhs: d[2]
-        }) %}
     |  single {% first %}
 
 negative
